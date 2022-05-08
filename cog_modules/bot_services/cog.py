@@ -30,8 +30,8 @@ class BotServices(commands.Cog):
 
     # @commands.Cog.listener()
     # async def on_message(self, message):
-    #     if message.author.id == self.user.id:
-    #         return
+    #     # if message.author.id == bot.id:
+    #     #     return
     #
     #     if self.user.mention in message.content:
     #         await ctx.send("Hello!")
