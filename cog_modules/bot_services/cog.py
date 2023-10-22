@@ -4,8 +4,8 @@ import os
 import traceback
 
 import aiohttp
-import disnake
-from disnake.ext import commands, tasks
+import discord
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -37,5 +37,5 @@ class BotServices(commands.Cog):
     #         await ctx.send("Hello!")
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(BotServices(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(BotServices(bot))

@@ -4,8 +4,8 @@ import os
 import traceback
 
 import aiohttp
-import disnake
-from disnake.ext import commands, tasks
+import discord
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,30 +25,30 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_guild_permissions(ban_members=True)
-    async def kick(self, ctx, member: disnake.Member, *, reason=None):
+    async def kick(self, ctx, member: discord.Member, *, reason=None):
         '''Moderators who call this command can kick members from the server.'''
         await ctx.guild.kick(user = member, reason = reason)
 
         channel = self.bot.get_channel(LOG_CHANNEL_ID)
-        message = disnake.Embed(
+        message = discord.Embed(
             title=f"{ctx.author.name} kicked: {member.name}",
             description= reason,
-            color=disnake.Color.red(),
+            color=discord.Color.red(),
         )
         await channel.send(embed=message)
 
     @commands.command()
     @commands.guild_only()
     @commands.has_guild_permissions(ban_members=True)
-    async def ban(self, ctx, member: disnake.Member, *, reason=None):
+    async def ban(self, ctx, member: discord.Member, *, reason=None):
         '''Moderators who call this command can ban members from the server.'''
         await ctx.guild.ban(user = member, reason = reason)
 
         channel = self.bot.get_channel(LOG_CHANNEL_ID)
-        message = disnake.Embed(
+        message = discord.Embed(
             title=f"{ctx.author.name} banned: {member.name}",
             description= reason,
-            color=disnake.Color.red(),
+            color=discord.Color.red(),
         )
         await channel.send(embed=message)
 
@@ -61,13 +61,13 @@ class Moderation(commands.Cog):
         await ctx.guild.unban(member, reason = reason)
 
         channel = self.bot.get_channel(LOG_CHANNEL_ID)
-        message = disnake.Embed(
+        message = discord.Embed(
             title=f"{ctx.author.name} unbanned: {member.name}",
             description= reason,
-            color=disnake.Color.red(),
+            color=discord.Color.red(),
         )
         await channel.send(embed=message)
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Moderation(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Moderation(bot))
