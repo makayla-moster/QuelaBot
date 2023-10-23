@@ -1,0 +1,5 @@
+2023-10-22 21:38:24,553:DEBUG:discord.client: on_ready has successfully been registered as an event
+2023-10-22 21:38:24,553:INFO:discord.client: logging in using static token
+2023-10-22 21:38:25,076:INFO:discord.gateway: Shard ID None has connected to Gateway (Session ID: 6cac21462c1df4aa19080b579babfa4d).
+2023-10-22 21:49:12,947:ERROR:discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "pokemono" is not found

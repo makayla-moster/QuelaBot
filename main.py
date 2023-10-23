@@ -13,7 +13,11 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 OWNER = os.getenv("OWNER_ID")
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", case_insensitive=True, owner_id=OWNER, intents=intents)
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 async def load_cogs():
     for folder in os.listdir("cog_modules"):
