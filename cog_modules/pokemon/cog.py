@@ -104,111 +104,60 @@ class Pokemon(commands.Cog):
         embed.add_field(name="No Damage To", value=ndt, inline = False)
         await ctx.send(embed=embed)
 
-    # @commands.command(name="pokemon")
-    # @commands.cooldown(1, 15, commands.BucketType.user)
-    # async def getPokemon(self, ctx: commands.Context, *args):
-    #     mon = ''
-    #     for i in range(len(args)):
-    #         if i == 0:
-    #             mon += args[i].lower()
-    #         else:
-    #             mon += "-" + args[i].lower()
-    #     print(mon)
-    #     mon = mon.replace(".", "")
-    #     client = aiopoke.AiopokeClient()
-    #     pokemon = await client.get_pokemon_species(mon)
-    #     await client.close()
-    #     print(pokemon)
-
-    #     en_flag = False
-    #     while not en_flag:
-    #         entry = random.choice(pokemon.flavor_text_entries)
-    #         if entry.language.name == "en":
-    #             en_flag = True 
-    #     print(entry)
-
-    #     # file = discord.File(f"./official-artwork/{pokemon.id}.png", filename=f"{pokemon.id}.png")
-    #     embed = discord.Embed(title=f"Information about {pokemon.name.replace('-', ' ').title()}", description=f" ")
-    #     # embed.set_image(url=f"attachment://{pokemon.id}.png")
-    #     # embed.set_thumbnail(url=f"https://github.com/PokeAPI/sprites/tree/master/sprites/pokemon/other/official-artwork/{pokemon.id}.png")
-    #     embed.add_field(name="ID", value=pokemon.id)
-    #     embed.add_field(name=f"Pokémon {entry.version.name.replace('-', ' ').title()} flavor text", value=entry.flavor_text.replace("\n", " ").replace("\x0c", " "), inline=False)
-    #     embed.set_footer(
-    #         text=f"{ctx.author.name}",
-    #         icon_url=ctx.author.display_avatar.url,
-    #     )
-    #     await ctx.send(embed=embed)
-
     @commands.command(name="pokemon")
     @commands.cooldown(1, 15, commands.BucketType.user)
-    async def getPokemon(self, ctx: commands.Context, *args):
+    async def getPokemonSpecies(self, ctx: commands.Context, *args):
         mon = ''
         for i in range(len(args)):
             if i == 0:
                 mon += args[i].lower()
             else:
                 mon += "-" + args[i].lower()
-        print(mon)
         mon = mon.replace(".", "")
         client = aiopoke.AiopokeClient()
         pokemon = await client.get_pokemon_species(mon)
+        # pokemonType = await client.get_pokemon(mon)
         await client.close()
-        print("close client")
-        # print(pokemon)
+        print(pokemon)
+        # print(pokemonType)
 
         en_flag = False
         while not en_flag:
             entry = random.choice(pokemon.flavor_text_entries)
             if entry.language.name == "en":
                 en_flag = True 
-        print("flavortext")
 
         if pokemon.evolves_from_species != None:
             evolved = pokemon.evolves_from_species.name.title()
         else:
             evolved = "None"
 
-        print("evolution")
-
         embed = discord.Embed(title=f"Information about {pokemon.name.replace('-', ' ').title()}", description=f" ")
-        # file = discord.File(f"official-artwork/{pokemon.id}.png", filename="image.png")
-        # embed.set_thumbnail(url="attachment://image.png")
-        # print("image")
+        embed.set_thumbnail(url=f"https://raw.githubusercontent.com/makayla-moster/QuelaBot/main/cog_modules/pokemon/official-artwork/{pokemon.id}.png")
+
         embed.add_field(name="ID", value=pokemon.id)
-        print(pokemon.id)
-        print(pokemon.habitat)
         if pokemon.habitat != None:
             embed.add_field(name="Habitat? ", value=pokemon.habitat.name.title())
-            print(pokemon.habitat.name.title())
         else:
             embed.add_field(name="Habitat?", value="N/A")
-        print("habitat")
         embed.add_field(name="Baby Pokémon?", value=pokemon.is_baby)
-        print("--")
-        # print("baby " + pokemon.is_baby)
         embed.add_field(name="Evolves from", value=evolved)
-        print("evolve " + evolved)
         embed.add_field(name="Legendary?", value=pokemon.is_legendary)
-        # print("legendary " + pokemon.is_legendary)
         embed.add_field(name="Mythical?", value=pokemon.is_mythical)
-        # print("mythical " + pokemon.is_mythical)
         embed.add_field(name=f"Pokémon {entry.version.name.replace('-', ' ').title()} flavor text", value=entry.flavor_text.replace("\n", " ").replace("\x0c", " "), inline=False)
-        print("flavortext2 " + entry.flavor_text.replace("\n", " ").replace("\x0c", " "))
         embed.set_footer(
                 text=f"{ctx.author.name}",
                 icon_url=ctx.author.display_avatar.url,
             )
-        print("finalize embed")
         await ctx.send(embed=embed)
-        await ctx.send(file = discord.File(f"./official-artwork/{pokemon.id}.png", filename="image.png"))
-        print("send embed")
 
-    @getPokemon.error
-    async def getPokemon_error(self, ctx, error):
+    @getPokemonSpecies.error
+    async def getPokemonSpecies_error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(
                 f"You can only get info on 1 Pokémon every 15 seconds. Try again in {round(error.retry_after, 2)} seconds."
             )
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Pokemon(bot))
