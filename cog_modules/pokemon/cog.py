@@ -105,7 +105,7 @@ class Pokemon(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @commands.command(name="dex", aliases=["pokemon, mon"])
+    @commands.command(name="dex", aliases=["pokemon", "mon"])
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def getPokemonSpecies(self, ctx: commands.Context, *args):
         mon = ''
@@ -117,12 +117,87 @@ class Pokemon(commands.Cog):
         mon = mon.replace(".", "")
         client = aiopoke.AiopokeClient()
         pokemon = await client.get_pokemon_species(mon)
+        # print(pokemon.evolution_chain)
         pokemonType = await client.get_pokemon(mon)
-        await client.close()
-        # print(pokemon)
-        # print(pokemonType)
+        # evochain = await client.get_evolution_chain(pokemon.evolution_chain.id)
+        # print(evochain.chain)
+        # print(evochain.chain.evolves_to[0].species.name.title())
 
-        # await getPokeInfo(mon)
+        damageFrom = {}
+        damageTo = {}
+        for i in range(len(pokemonType.types)):
+            type = await client.get_type(pokemonType.types[i].type.name.lower())
+            for i in range(len(type.damage_relations.double_damage_from)):
+                if type.damage_relations.double_damage_from[i].name in damageFrom:
+                    damageFrom[type.damage_relations.double_damage_from[i].name] *= 2
+                else:
+                    damageFrom[type.damage_relations.double_damage_from[i].name] = 2
+                
+            for i in range(len(type.damage_relations.half_damage_from)):
+                if type.damage_relations.half_damage_from[i].name in damageFrom:
+                    damageFrom[type.damage_relations.half_damage_from[i].name] *= 0.5
+                else:
+                    damageFrom[type.damage_relations.half_damage_from[i].name] = 0.5
+
+            for i in range(len(type.damage_relations.no_damage_from)):
+                if type.damage_relations.no_damage_from[i].name in damageFrom:
+                    damageFrom[type.damage_relations.no_damage_from[i].name] *= 0
+                else:
+                    damageFrom[type.damage_relations.no_damage_from[i].name] = 0
+
+            for i in range(len(type.damage_relations.double_damage_to)):
+                if type.damage_relations.double_damage_to[i].name in damageTo:
+                    damageTo[type.damage_relations.double_damage_to[i].name] *= 2
+                else:
+                    damageTo[type.damage_relations.double_damage_to[i].name] = 2
+                
+            for i in range(len(type.damage_relations.half_damage_to)):
+                if type.damage_relations.half_damage_to[i].name in damageTo:
+                    damageTo[type.damage_relations.half_damage_to[i].name] *= 0.5
+                else:
+                    damageTo[type.damage_relations.half_damage_to[i].name] = 0.5
+
+            for i in range(len(type.damage_relations.no_damage_to)):
+                if type.damage_relations.no_damage_to[i].name in damageTo:
+                    damageTo[type.damage_relations.no_damage_to[i].name] *= 0
+                else:
+                    damageTo[type.damage_relations.no_damage_to[i].name] = 0
+
+        # print(damageFrom)
+        # print(damageTo)
+        generation = pokemon.generation.id
+        generationInfo = await client.get_generation(generation)
+
+        await client.close()
+
+        
+        region = generationInfo.main_region.name.title() + f", Gen. {generationInfo.main_region.id}"
+        # print(region)
+
+        weaknesses = ''
+        for key in damageFrom:
+            if damageFrom[key] >= 2:
+                if weaknesses == '': 
+                    weaknesses += key.title()
+                else:
+                    weaknesses += ", " + key.title()
+
+        resistant = ''
+        for key in damageFrom:
+            if (damageFrom[key] == 0.5) or (damageFrom[key] == 0.25):
+                if resistant == '':
+                    resistant += key.title()
+                else:
+                    resistant += ", " + key.title()
+        # print(weaknesses)
+        # print(resistant)
+
+        pokeHeight = int(pokemonType.height) * 0.33
+        pokeWeight = int(pokemonType.weight) * 0.22
+
+        # print(pokeHeight)
+        # print(pokeWeight)
+
 
         en_flag = False
         while not en_flag:
@@ -130,16 +205,32 @@ class Pokemon(commands.Cog):
             if entry.language.name == "en":
                 en_flag = True 
 
+        specialty = ''
+        if pokemon.is_baby:
+            if specialty == '':
+                specialty += "Baby"
+            else:
+                specialty += ", Baby"
+        if pokemon.is_legendary:
+            if specialty == '':
+                specialty += "Legendary"
+            else:
+                specialty += ", Legendary"
+        if pokemon.is_mythical:
+            if specialty == '':
+                specialty += "Mythical"
+            else:
+                specialty += ", Mythical"
+        if specialty == '':
+            specialty = 'None'
+
         if pokemon.evolves_from_species != None:
             evolved = pokemon.evolves_from_species.name.title()
         else:
             evolved = "None"
 
-        # print(pokemonType.forms)
-
         pokeTyping = ''
         for i in range(len(pokemonType.types)):
-            # print(pokemonType.types[i].type.name.title())
             if i == 0:
                 pokeTyping += pokemonType.types[i].type.name.title()
             else:
@@ -150,15 +241,16 @@ class Pokemon(commands.Cog):
         
         embed.add_field(name="ID", value=pokemon.id)
         embed.add_field(name="Type(s)", value=pokeTyping)
+        embed.add_field(name="Weak against", value=weaknesses)
+        embed.add_field(name='Region', value=region)
         if pokemon.habitat != None:
-            embed.add_field(name="Habitat? ", value=pokemon.habitat.name.replace('-', ' ').title())
+            embed.add_field(name="Habitat", value=pokemon.habitat.name.replace('-', ' ').title())
         else:
-            embed.add_field(name="Habitat?", value="N/A")
-        
+            embed.add_field(name="Habitat", value="N/A")
+        embed.add_field(name="Strong against", value=resistant)
+        embed.add_field(name="Size", value=f"{pokeHeight} ft., {pokeWeight} lbs.")
         embed.add_field(name="Evolves from", value=evolved)
-        # embed.add_field(name="Baby Pokémon?", value=pokemon.is_baby)
-        embed.add_field(name="Legendary?", value=pokemon.is_legendary)
-        embed.add_field(name="Mythical?", value=pokemon.is_mythical)
+        embed.add_field(name="Other Attributes", value=specialty)
         embed.add_field(name=f"Pokémon {entry.version.name.replace('-', ' ').title()} flavor text", value=entry.flavor_text.replace("\n", " ").replace("\x0c", " "), inline=False)
         embed.set_footer(
                 text=f"{ctx.author.name}",
