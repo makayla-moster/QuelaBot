@@ -248,7 +248,7 @@ class Pokemon(commands.Cog):
         else:
             embed.add_field(name="Habitat", value="N/A")
         embed.add_field(name="Strong against", value=resistant)
-        embed.add_field(name="Size", value=f"{pokeHeight} ft., {pokeWeight} lbs.")
+        embed.add_field(name="Size", value=f"{round(pokeHeight, 2)} ft., {round(pokeWeight, 2)} lbs.")
         embed.add_field(name="Evolves from", value=evolved)
         embed.add_field(name="Other Attributes", value=specialty)
         embed.add_field(name=f"Pokémon {entry.version.name.replace('-', ' ').title()} flavor text", value=entry.flavor_text.replace("\n", " ").replace("\x0c", " "), inline=False)
